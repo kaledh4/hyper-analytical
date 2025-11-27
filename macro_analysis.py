@@ -545,8 +545,22 @@ def main():
     
     # 7. Write to JSON file
     print("\n💾 Writing dashboard data...")
+    
+    # Handle NaN values before JSON serialization
+    def convert_nan_to_none(obj):
+        if isinstance(obj, dict):
+            return {k: convert_nan_to_none(v) for k, v in obj.items()}
+        elif isinstance(obj, list):
+            return [convert_nan_to_none(item) for item in obj]
+        elif isinstance(obj, float) and (np.isnan(obj) or np.isinf(obj)):
+            return None
+        return obj
+    
+    # Convert NaN values to None for JSON serialization
+    sanitized_dashboard_data = convert_nan_to_none(dashboard_data)
+    
     with open("dashboard_data.json", "w") as f:
-        json.dump(dashboard_data, f, indent=2)
+        json.dump(sanitized_dashboard_data, f, indent=2)
     print("✅ Data saved to dashboard_data.json")
     
     # 8. Send Telegram notification
