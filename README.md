@@ -20,6 +20,7 @@
 - **🔍 Data Validation** - Automatic data consistency checks
 - **🔧 Data Correction** - Live data correction for accuracy
 - **🧮 Standardized Risk Metrics** - MVRV Z-Score, Puell Multiple, and proprietary metrics
+- **🌐 Macro Data Correction** - Real-time macroeconomic data validation and correction
 
 ---
 
@@ -109,6 +110,7 @@ SITE_URL = "https://<YOUR-USERNAME>.github.io/hyper-analytical/"
          ├──► FRED API (pandas-datareader) - Fed Funds, Yields, CPI
          ├──► Data Validation & Correction Modules
          ├──► Standardized Risk Metrics Calculation
+         ├──► Macro Data Correction
          └──► OpenRouter AI - Generates commentary
          │
          ▼
@@ -167,7 +169,11 @@ risk = normalize(deviation, 4-year rolling window)
 
 #### 3. **Standardized Risk Metrics**
 - **MVRV Z-Score** - Market Value to Realized Value ratio standardized
+  - Formula: `(Market Cap - Realized Cap) / StdDev(Market Cap - Realized Cap)`
 - **Puell Multiple** - Daily issuance relative to annual average
+  - Formula: `Daily Issuance Value in USD / 365-day MA of Daily Issuance Value in USD`
+- **Gompertz Curve Model** - Adoption curve modeling
+  - Formula: `f(t) = a * exp(-b * exp(-c * t))`
 - **Composite Risk Score** - Weighted combination of all metrics
 
 #### 4. **Heikin-Ashi Trend**
@@ -186,7 +192,7 @@ Smoothed candlestick analysis for trend confirmation.
 
 1. **Install Python dependencies**:
    ```bash
-   pip install yfinance pandas pandas-datareader numpy requests
+   pip install yfinance pandas pandas-datareader numpy requests flask flask-cors
    ```
 
 2. **Set environment variables**:
@@ -212,6 +218,28 @@ Smoothed candlestick analysis for trend confirmation.
 
 5. **Visit**: `http://localhost:8000`
 
+### API Endpoints
+
+The system includes a Flask API for technical validation:
+
+```bash
+# Start the Flask API server
+python flask_validator_api.py
+```
+
+API endpoint: `POST /validate_technicals`
+
+Expected JSON payload:
+```json
+{
+    "historical_prices": [91000, 91500, 92000, ...],
+    "analysis_price": 95847.00,
+    "analysis_sma": 88432.00,
+    "analysis_ema": 89202.00,
+    "live_price": 91506.00
+}
+```
+
 ### Project Structure
 
 ```
@@ -229,10 +257,13 @@ hyper-analytical/
 ├── macro_analysis.py             # Python analysis engine
 ├── data_validator.py             # Data validation module
 ├── data_corrector.py             # Data correction module
-├── risk_metrics.py               # Standardized risk metrics
+├── macro_data_corrector.py       # Macro data correction module
+├── risk_metrics.py               # Risk metrics calculation
+├── standardized_risk_metrics.py  # Standardized risk metrics
+├── crypto_validator.py           # Technical validation class
+├── flask_validator_api.py        # Flask API for validation
 ├── dashboard_data.json           # Generated data (auto-updated)
 ├── HOW_TO.txt                    # Setup instructions
-├── example_enhanced_analysis.py  # Example usage of enhanced features
 └── README.md                     # This file
 ```
 

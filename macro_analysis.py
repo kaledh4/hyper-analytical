@@ -56,6 +56,20 @@ except ImportError:
     print("⚠️ Risk metrics module not available")
     RISK_METRICS_AVAILABLE = False
 
+try:
+    from macro_data_corrector import MacroDataCorrector
+    MACRO_CORRECTOR_AVAILABLE = True
+except ImportError:
+    print("⚠️ Macro data corrector module not available")
+    MACRO_CORRECTOR_AVAILABLE = False
+
+try:
+    from standardized_risk_metrics import StandardizedRiskMetrics
+    STANDARDIZED_RISK_AVAILABLE = True
+except ImportError:
+    print("⚠️ Standardized risk metrics module not available")
+    STANDARDIZED_RISK_AVAILABLE = False
+
 # ==========================================
 # Configuration
 # ==========================================
@@ -378,6 +392,7 @@ def main():
     
     # Initialize data corrector if available
     data_corrector = DataCorrector() if CORRECTOR_AVAILABLE else None
+    macro_corrector = MacroDataCorrector() if MACRO_CORRECTOR_AVAILABLE else None
     
     # 1. Fetch macro data
     macro = get_macro_data()
@@ -405,6 +420,8 @@ def main():
     
     # 4. Validate and correct data consistency (if modules are available)
     corrections = {}
+    macro_corrections = {}
+    
     if VALIDATOR_AVAILABLE and CORRECTOR_AVAILABLE:
         print("\n🔍 Validating and correcting data consistency...")
         try:
@@ -434,27 +451,82 @@ def main():
         except Exception as e:
             print(f"⚠️ Data correction error: {e}")
     
-    # 5. Generate AI analysis
-    analysis = generate_cowen_analysis(btc, eth, dxy, macro, risk_current, risk_prev)
+    # Apply macro data corrections if available
+    if MACRO_CORRECTOR_AVAILABLE:
+        print("\n🌐 Validating and correcting macro data...")
+        try:
+            # Get original macro values
+            original_dxy = float(dxy['Close'].iloc[-1])
+            original_fed_rate = float(macro['FEDFUNDS'].iloc[-1]) if not macro.empty else 5.33
+            
+            # Apply macro corrections based on clinical audit findings
+            dxy_macro_correction = macro_corrector.correct_dxy_data(original_dxy)
+            fed_rate_correction = macro_corrector.correct_fed_rate_data(original_fed_rate)
+            
+            macro_corrections = {
+                "dxy_index": dxy_macro_correction,
+                "fed_funds_rate": fed_rate_correction
+            }
+            
+            # Print macro correction report
+            print(macro_corrector.generate_macro_correction_report(macro_corrections))
+            
+            # Use corrected values if corrections were applied
+            if dxy_macro_correction["correction_applied"]:
+                print(f"🔧 Using corrected DXY value: {dxy_macro_correction['corrected_value']:.2f}")
+            
+            if fed_rate_correction["correction_applied"]:
+                print(f"🔧 Using corrected Fed Funds Rate: {fed_rate_correction['corrected_value']:.2f}%")
+                
+        except Exception as e:
+            print(f"⚠️ Macro data correction error: {e}")
+    
+    # 5. Generate AI analysis with corrected data
+    # Apply corrections to the data used in analysis generation
+    corrected_btc = btc.copy()
+    corrected_dxy = dxy.copy()
+    corrected_macro = macro.copy()
+    
+    # Apply Bitcoin price correction if available
+    if corrections.get("bitcoin_price", {}).get("correction_applied"):
+        corrected_btc_price = corrections["bitcoin_price"]["corrected_value"]
+        # Adjust the last price in the dataframe
+        corrected_btc.iloc[-1, corrected_btc.columns.get_loc('Close')] = corrected_btc_price
+    
+    # Apply DXY correction if available
+    if corrections.get("dxy_index", {}).get("correction_applied"):
+        corrected_dxy_value = corrections["dxy_index"]["corrected_value"]
+        # Adjust the last price in the dataframe
+        corrected_dxy.iloc[-1, corrected_dxy.columns.get_loc('Close')] = corrected_dxy_value
+    
+    # Apply Fed Funds Rate correction if available
+    if macro_corrections.get("fed_funds_rate", {}).get("correction_applied") and not corrected_macro.empty:
+        corrected_fed_rate = macro_corrections["fed_funds_rate"]["corrected_value"]
+        # Adjust the last Fed Funds Rate in the dataframe
+        corrected_macro.iloc[-1, corrected_macro.columns.get_loc('FEDFUNDS')] = corrected_fed_rate
+    
+    # Generate analysis with corrected data
+    analysis = generate_cowen_analysis(corrected_btc, eth, corrected_dxy, corrected_macro, risk_current, risk_prev)
     
     # 6. Prepare dashboard data (apply corrections if available)
-    btc_price = float(btc['Close'].iloc[-1])
-    dxy_value = float(dxy['Close'].iloc[-1])
+    btc_price = float(corrected_btc['Close'].iloc[-1])
+    dxy_value = float(corrected_dxy['Close'].iloc[-1])
+    fed_rate_value = float(corrected_macro['FEDFUNDS'].iloc[-1]) if not corrected_macro.empty else 5.25
     
-    # Apply corrections if available
-    if corrections.get("bitcoin_price", {}).get("correction_applied"):
-        btc_price = corrections["bitcoin_price"]["corrected_value"]
+    # Override with macro corrections if more specific
+    if macro_corrections.get("dxy_index", {}).get("correction_applied"):
+        dxy_value = macro_corrections["dxy_index"]["corrected_value"]
     
-    if corrections.get("dxy_index", {}).get("correction_applied"):
-        dxy_value = corrections["dxy_index"]["corrected_value"]
+    if macro_corrections.get("fed_funds_rate", {}).get("correction_applied"):
+        fed_rate_value = macro_corrections["fed_funds_rate"]["corrected_value"]
     
     dashboard_data = {
         "date": datetime.now().strftime("%B %d, %Y"),
         "btc_price": btc_price,
         "eth_btc": float(eth['Close'].iloc[-1] / btc['Close'].iloc[-1]),
         "bmsb": {
-            "sma_20": float(btc['SMA_20'].iloc[-1]),
-            "ema_21": float(btc['EMA_21'].iloc[-1])
+            "sma_20": float(corrected_btc['SMA_20'].iloc[-1]),
+            "ema_21": float(corrected_btc['EMA_21'].iloc[-1])
         },
         "risk_metric": {
             "current": risk_current,
@@ -464,8 +536,8 @@ def main():
         },
         "macro": {
             "dxy": dxy_value,
-            "yield_inversion": float(macro['Yield_Curve'].iloc[-1]) if not macro.empty else -0.35,
-            "fed_rate": float(macro['FEDFUNDS'].iloc[-1]) if not macro.empty else 5.25
+            "yield_inversion": float(corrected_macro['Yield_Curve'].iloc[-1]) if not corrected_macro.empty else -0.35,
+            "fed_rate": fed_rate_value
         },
         "commentary": analysis,
         "generated_at": datetime.now().isoformat()
