@@ -1,4 +1,4 @@
-# 📊 Hyper Analytical - Crypto Macro Intelligence
+# 📊 Hyper Analytical - Crypto Market Intelligence
 
 ![Banner](./icons/icon-512.png)
 
@@ -17,6 +17,9 @@
 - **⚡ Lightning Fast** - Optimized performance with smart caching
 - **🔒 Secure** - API keys stored in GitHub Secrets
 - **🌐 GitHub Pages** - Free hosting, zero maintenance
+- **🔍 Data Validation** - Automatic data consistency checks
+- **🔧 Data Correction** - Live data correction for accuracy
+- **🧮 Standardized Risk Metrics** - MVRV Z-Score, Puell Multiple, and proprietary metrics
 
 ---
 
@@ -44,6 +47,11 @@ Add the following secrets:
 | `OPENROUTER_API_KEY` | OpenRouter API Key (free) | Sign up at [openrouter.ai](https://openrouter.ai) |
 | `TELEGRAM_BOT_TOKEN` | Telegram Bot Token (optional) | Message [@BotFather](https://t.me/BotFather) on Telegram |
 | `TELEGRAM_CHAT_ID` | Your Telegram Chat ID (optional) | Message your bot, then visit `https://api.telegram.org/bot<TOKEN>/getUpdates` |
+
+> 💡 **Telegram Bot Setup Tips**:
+> - After creating your bot with BotFather, send `/start` to your bot
+> - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates` to find your chat ID
+> - The bot will send daily market updates if properly configured
 
 ### 4️⃣ Update Configuration
 
@@ -99,6 +107,8 @@ SITE_URL = "https://<YOUR-USERNAME>.github.io/hyper-analytical/"
          │
          ├──► Yahoo Finance (yfinance) - BTC, ETH, DXY prices
          ├──► FRED API (pandas-datareader) - Fed Funds, Yields, CPI
+         ├──► Data Validation & Correction Modules
+         ├──► Standardized Risk Metrics Calculation
          └──► OpenRouter AI - Generates commentary
          │
          ▼
@@ -155,10 +165,15 @@ risk = normalize(deviation, 4-year rolling window)
 - **0.4 - 0.7** → Neutral zone
 - **0.7 - 1.0** → Distribution zone (overvalued)
 
-#### 3. **Heikin-Ashi Trend**
+#### 3. **Standardized Risk Metrics**
+- **MVRV Z-Score** - Market Value to Realized Value ratio standardized
+- **Puell Multiple** - Daily issuance relative to annual average
+- **Composite Risk Score** - Weighted combination of all metrics
+
+#### 4. **Heikin-Ashi Trend**
 Smoothed candlestick analysis for trend confirmation.
 
-#### 4. **Macro Indicators**
+#### 5. **Macro Indicators**
 - **Yield Curve** (10Y - 2Y): Negative = recession warning
 - **DXY Index**: Higher = headwind for crypto
 - **Fed Funds Rate**: Higher = tighter liquidity
@@ -212,9 +227,12 @@ hyper-analytical/
 ├── service-worker.js             # PWA service worker
 ├── manifest.json                 # PWA manifest
 ├── macro_analysis.py             # Python analysis engine
+├── data_validator.py             # Data validation module
+├── data_corrector.py             # Data correction module
+├── risk_metrics.py               # Standardized risk metrics
 ├── dashboard_data.json           # Generated data (auto-updated)
-├── 1st.txt                       # Documentation (basic version)
-├── 2nd.txt                       # Documentation (premium version)
+├── HOW_TO.txt                    # Setup instructions
+├── example_enhanced_analysis.py  # Example usage of enhanced features
 └── README.md                     # This file
 ```
 

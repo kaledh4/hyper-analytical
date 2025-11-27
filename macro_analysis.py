@@ -10,18 +10,51 @@ Features:
 - Heikin-Ashi trend analysis
 - OpenRouter AI commentary generation
 - Telegram notifications
+- Data validation and correction
 
 Author: Hyper Analytical
 """
 
 import yfinance as yf
 import pandas as pd
-import pandas_datareader.data as web
 import numpy as np
 import requests
 import os
 import json
 from datetime import datetime, timedelta
+
+# Try to import pandas_datareader, but handle if it's not available
+try:
+    import pandas_datareader.data as web
+    PANDAS_DATAREADER_AVAILABLE = True
+except ImportError:
+    print("⚠️ pandas-datareader not available, FRED data will not be fetched")
+    web = None
+    PANDAS_DATAREADER_AVAILABLE = False
+
+# ==========================================
+# Module Imports
+# ==========================================
+try:
+    from data_validator import BMSBCalculator, fetch_live_data, validate_analysis_data
+    VALIDATOR_AVAILABLE = True
+except ImportError:
+    print("⚠️ Data validator module not available")
+    VALIDATOR_AVAILABLE = False
+
+try:
+    from data_corrector import DataCorrector
+    CORRECTOR_AVAILABLE = True
+except ImportError:
+    print("⚠️ Data corrector module not available")
+    CORRECTOR_AVAILABLE = False
+
+try:
+    from risk_metrics import RiskMetricsCalculator
+    RISK_METRICS_AVAILABLE = True
+except ImportError:
+    print("⚠️ Risk metrics module not available")
+    RISK_METRICS_AVAILABLE = False
 
 # ==========================================
 # Configuration
@@ -41,6 +74,12 @@ def get_macro_data():
     Returns: DataFrame with Fed Funds Rate, Treasury Yields, and CPI
     """
     print("📊 Fetching macro data from FRED...")
+    
+    # Check if pandas-datareader is available
+    if not PANDAS_DATAREADER_AVAILABLE:
+        print("⚠️ pandas-datareader not available, using fallback data")
+        return pd.DataFrame()
+    
     start = datetime.now() - timedelta(days=365*5)
     
     try:
@@ -279,6 +318,10 @@ Analysis by Hyper Analytical."""
 
 def send_telegram_alert(data):
     """Sends notification to Telegram"""
+    print(f"🔍 Checking Telegram credentials...")
+    print(f"   TELEGRAM_TOKEN: {'SET' if TELEGRAM_TOKEN else 'NOT SET'}")
+    print(f"   TELEGRAM_CHAT_ID: {'SET' if TELEGRAM_CHAT_ID else 'NOT SET'}")
+    
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("⚠️ Telegram credentials not configured")
         return
@@ -301,7 +344,7 @@ def send_telegram_alert(data):
 
 _Powered by Hyper Analytical_"""
 
-        requests.post(
+        response = requests.post(
             f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
             data={
                 "chat_id": TELEGRAM_CHAT_ID,
@@ -310,9 +353,16 @@ _Powered by Hyper Analytical_"""
             },
             timeout=10
         )
-        print("✅ Telegram alert sent")
+        
+        if response.status_code == 200:
+            print("✅ Telegram alert sent successfully")
+        else:
+            print(f"⚠️ Telegram API error: {response.status_code}")
+            print(f"   Response: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"⚠️ Telegram connection error: {e}")
     except Exception as e:
-        print(f"⚠️ Telegram error: {e}")
+        print(f"⚠️ Telegram unexpected error: {e}")
 
 
 # ==========================================
@@ -326,6 +376,9 @@ def main():
     print("=" * 60)
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}\n")
     
+    # Initialize data corrector if available
+    data_corrector = DataCorrector() if CORRECTOR_AVAILABLE else None
+    
     # 1. Fetch macro data
     macro = get_macro_data()
     
@@ -334,16 +387,70 @@ def main():
     eth = get_crypto_data("ETH-USD")
     dxy = get_crypto_data("DX-Y.NYB")
     
-    # 3. Calculate risk metric
+    # 3. Calculate risk metric (enhanced with standardized metrics if available)
     risk_current, risk_prev, risk_history = calculate_risk_metric(btc)
     
-    # 4. Generate AI analysis
+    # Calculate standardized risk metrics if available
+    standardized_risk = {}
+    if RISK_METRICS_AVAILABLE:
+        print("\n📊 Calculating standardized risk metrics...")
+        try:
+            risk_calculator = RiskMetricsCalculator(btc)
+            standardized_risk = risk_calculator.compare_risk_metrics()
+            print(f"✅ Standardized Risk Metrics calculated")
+            print(f"   Composite Risk: {standardized_risk['composite_risk']}")
+            print(f"   Confidence: {standardized_risk['overall_confidence']}")
+        except Exception as e:
+            print(f"⚠️ Standardized risk metrics error: {e}")
+    
+    # 4. Validate and correct data consistency (if modules are available)
+    corrections = {}
+    if VALIDATOR_AVAILABLE and CORRECTOR_AVAILABLE:
+        print("\n🔍 Validating and correcting data consistency...")
+        try:
+            # Get original values
+            original_btc_price = float(btc['Close'].iloc[-1])
+            original_dxy = float(dxy['Close'].iloc[-1])
+            
+            # Apply corrections
+            btc_correction = data_corrector.correct_bitcoin_data(original_btc_price)
+            dxy_correction = data_corrector.correct_dxy_data(original_dxy)
+            
+            corrections = {
+                "bitcoin_price": btc_correction,
+                "dxy_index": dxy_correction
+            }
+            
+            # Print correction report
+            print(data_corrector.generate_correction_report(corrections))
+            
+            # Use corrected values if corrections were applied
+            if btc_correction["correction_applied"]:
+                print(f"🔧 Using corrected Bitcoin price: ${btc_correction['corrected_value']:,.2f}")
+            
+            if dxy_correction["correction_applied"]:
+                print(f"🔧 Using corrected DXY value: {dxy_correction['corrected_value']:.2f}")
+                
+        except Exception as e:
+            print(f"⚠️ Data correction error: {e}")
+    
+    # 5. Generate AI analysis
     analysis = generate_cowen_analysis(btc, eth, dxy, macro, risk_current, risk_prev)
     
-    # 5. Prepare dashboard data
+    # 6. Prepare dashboard data (apply corrections if available)
+    btc_price = float(btc['Close'].iloc[-1])
+    dxy_value = float(dxy['Close'].iloc[-1])
+    
+    # Apply corrections if available
+    if corrections.get("bitcoin_price", {}).get("correction_applied"):
+        btc_price = corrections["bitcoin_price"]["corrected_value"]
+    
+    if corrections.get("dxy_index", {}).get("correction_applied"):
+        dxy_value = corrections["dxy_index"]["corrected_value"]
+    
     dashboard_data = {
         "date": datetime.now().strftime("%B %d, %Y"),
-        "btc_price": float(btc['Close'].iloc[-1]),
+        "btc_price": btc_price,
         "eth_btc": float(eth['Close'].iloc[-1] / btc['Close'].iloc[-1]),
         "bmsb": {
             "sma_20": float(btc['SMA_20'].iloc[-1]),
@@ -352,10 +459,11 @@ def main():
         "risk_metric": {
             "current": risk_current,
             "previous": risk_prev,
-            "history": risk_history
+            "history": risk_history,
+            "standardized": standardized_risk  # Add standardized metrics
         },
         "macro": {
-            "dxy": float(dxy['Close'].iloc[-1]),
+            "dxy": dxy_value,
             "yield_inversion": float(macro['Yield_Curve'].iloc[-1]) if not macro.empty else -0.35,
             "fed_rate": float(macro['FEDFUNDS'].iloc[-1]) if not macro.empty else 5.25
         },
@@ -363,13 +471,13 @@ def main():
         "generated_at": datetime.now().isoformat()
     }
     
-    # 6. Write to JSON file
+    # 7. Write to JSON file
     print("\n💾 Writing dashboard data...")
     with open("dashboard_data.json", "w") as f:
         json.dump(dashboard_data, f, indent=2)
     print("✅ Data saved to dashboard_data.json")
     
-    # 7. Send Telegram notification
+    # 8. Send Telegram notification
     send_telegram_alert(dashboard_data)
     
     print("\n" + "=" * 60)

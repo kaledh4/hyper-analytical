@@ -60,6 +60,7 @@
         <!-- Header -->
         <header class="header">
             <h1>📊 HYPER ANALYTICAL</h1>
+            <p class="header-subtitle">AI-Powered Crypto Market Intelligence</p>
             <div class="last-updated" id="lastUpdated">Loading...</div>
         </header>
 
@@ -75,7 +76,7 @@
             <div class="grid">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">⚠️ Bitcoin Risk Metric</h3>
+                        <h3 class="card-title">⚠️ Bitcoin Risk Metric <span class="confidence-score high-confidence">High</span></h3>
                     </div>
                     <div id="riskGauge" style="height: 280px;"></div>
                     <div class="risk-labels">
@@ -91,25 +92,25 @@
                 <!-- Market Structure -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">📈 Market Structure</h3>
+                        <h3 class="card-title">📈 Market Structure <span class="confidence-score high-confidence">High</span></h3>
                     </div>
 
                     <div class="text-center mb-lg">
-                        <div class="metric-label">Bitcoin Price</div>
+                        <div class="metric-label">Bitcoin Price <span class="confidence-score high-confidence">High</span></div>
                         <div class="big-number" id="btcPrice">$--,---</div>
                         <div id="bmsbStatus" class="badge badge-neutral">Loading...</div>
                     </div>
 
                     <div class="metric-row">
-                        <span class="metric-label">20-Week SMA</span>
+                        <span class="metric-label">20-Week SMA <span class="confidence-score medium-confidence">Medium</span></span>
                         <span class="metric-value text-green" id="sma20">$--,---</span>
                     </div>
                     <div class="metric-row">
-                        <span class="metric-label">21-Week EMA</span>
+                        <span class="metric-label">21-Week EMA <span class="confidence-score medium-confidence">Medium</span></span>
                         <span class="metric-value text-blue" id="ema21">$--,---</span>
                     </div>
                     <div class="metric-row">
-                        <span class="metric-label">ETH/BTC Ratio</span>
+                        <span class="metric-label">ETH/BTC Ratio <span class="confidence-score high-confidence">High</span></span>
                         <span class="metric-value" id="ethBtc">0.-----</span>
                     </div>
                 </div>
@@ -118,21 +119,21 @@
             <!-- Macro Indicators -->
             <div class="card full-width">
                 <div class="card-header">
-                    <h3 class="card-title">🌍 Macro Headwinds (Fed & DXY)</h3>
+                    <h3 class="card-title">🌍 Macro Headwinds (Fed & DXY) <span class="confidence-score high-confidence">High</span></h3>
                 </div>
                 <div class="macro-grid">
                     <div class="macro-item">
-                        <div class="metric-label">DXY Index</div>
+                        <div class="metric-label">DXY Index <span class="confidence-score high-confidence">High</span></div>
                         <div class="macro-item-value text-yellow" id="dxyValue">---</div>
                         <small class="text-muted">Dollar Strength</small>
                     </div>
                     <div class="macro-item">
-                        <div class="metric-label">Fed Funds Rate</div>
+                        <div class="metric-label">Fed Funds Rate <span class="confidence-score high-confidence">High</span></div>
                         <div class="macro-item-value text-red" id="fedRate">-.--</div>
                         <small class="text-muted">Interest Rate</small>
                     </div>
                     <div class="macro-item">
-                        <div class="metric-label">Yield Curve</div>
+                        <div class="metric-label">Yield Curve <span class="confidence-score high-confidence">High</span></div>
                         <div class="macro-item-value" id="yieldCurve">-.--</div>
                         <small class="text-muted">10Y - 2Y Spread</small>
                     </div>
@@ -147,23 +148,6 @@
                 <div id="analysisContent" class="analysis-content">
                     <p>Loading AI-powered market commentary...</p>
                 </div>
-            </div>
-
-            <!-- Disclaimer -->
-            <div class="card full-width" style="background: rgba(239, 68, 68, 0.1); border-color: var(--accent-red);">
-                <h3 style="color: var(--accent-red);">⚖️ Legal Disclaimer</h3>
-                <p><strong>For Informational Purposes Only</strong></p>
-                <p style="font-size: 0.875rem;">
-                    The analysis and "stock picks" generated by this application are for <strong>demonstration and
-                        educational purposes only</strong>.
-                    They are generated by an AI model based on market data and do not constitute financial advice.
-                </p>
-                <ul style="font-size: 0.875rem; color: var(--text-muted); margin-left: var(--spacing-lg);">
-                    <li>⚠️ Do NOT trade based on these recommendations</li>
-                    <li>📚 Always conduct your own due diligence</li>
-                    <li>🚫 Creators assume NO liability for financial decisions made based on this data</li>
-                    <li>💼 Consult a qualified financial advisor before making investment decisions</li>
-                </ul>
             </div>
 
             <!-- Footer -->
@@ -292,6 +276,27 @@
 
                 // Render Risk Gauge
                 renderRiskGauge(data.risk_metric.current);
+
+                // Display standardized risk metrics if available
+                if (data.risk_metric.standardized && Object.keys(data.risk_metric.standardized).length > 0) {
+                    const standardizedMetrics = data.risk_metric.standardized;
+                    const metricsHtml = `
+                        <div class="metric-info">
+                            <strong>Standardized Risk Assessment:</strong><br>
+                            Composite Risk: ${standardizedMetrics.composite_risk}<br>
+                            Confidence: ${standardizedMetrics.overall_confidence}<br>
+                            ${standardizedMetrics.composite_interpretation}
+                        </div>
+                    `;
+                    // Add this information to the risk gauge container
+                    const riskContainer = document.querySelector('#riskGauge').parentElement;
+                    if (!document.querySelector('.metric-info')) {
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'metric-info';
+                        infoDiv.innerHTML = metricsHtml;
+                        riskContainer.appendChild(infoDiv);
+                    }
+                }
 
                 // Render Analysis
                 const analysisHTML = marked.parse(data.commentary || '**Analysis coming soon...**');
