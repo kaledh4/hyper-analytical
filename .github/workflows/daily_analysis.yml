@@ -1,0 +1,59 @@
+name: 📊 Daily Market Analysis
+
+on:
+  schedule:
+    # Runs daily at 9:00 AM UTC (after markets open)
+    - cron: '0 9 * * *'
+  
+  # Allow manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yfinance pandas pandas-datareader numpy requests
+      
+      - name: 🧮 Run Market Analysis
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          echo "🚀 Starting market analysis..."
+          python macro_analysis.py
+          echo "✅ Analysis complete"
+      
+      - name: 📤 Commit and Push Results
+        run: |
+          git config --global user.name 'Hyper-Analytical Bot'
+          git config --global user.email 'bot@hyper-analytical.ai'
+          git add dashboard_data.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "📊 Daily Update: $(date +'%Y-%m-%d %H:%M UTC')"
+          git push
+        continue-on-error: true
+      
+      - name: 📊 Analysis Summary
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Daily Analysis Complete"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📅 Date: $(date)"
+          echo "🌐 Live at: https://kaledh4.github.io/hyper-analytical/"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
