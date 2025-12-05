@@ -1,5 +1,5 @@
 {
-  "date": "December 04, 2025",
+  "date": "December 05, 2025",
   "btc_price": 90394.3125,
   "eth_btc": 0.03310067266486622,
   "bmsb": {
@@ -97,14 +97,14 @@
       "composite_risk": 0.41,
       "composite_interpretation": "Neutral Risk - Balanced Positioning",
       "overall_confidence": "MEDIUM",
-      "calculation_timestamp": "2025-12-04T09:28:59.092735"
+      "calculation_timestamp": "2025-12-05T09:26:13.772981"
     }
   },
   "macro": {
     "dxy": 99.45999908447266,
-    "yield_inversion": 0.5800000000000001,
+    "yield_inversion": 0.5699999999999994,
     "fed_rate": null
   },
-  "commentary": "**Daily Crypto Market Update \u2013 2025\u201112\u201104**\n\n| Item | Value |\n|------|-------|\n| **Bitcoin** | $90,394 |\n| **BMSB 20\u2011W SMA** | $110,599 |\n| **BMSB 21\u2011W EMA** | $105,547 |\n| **Risk Metric** | 0.67 (\u2191 from 0.64) |\n| **ETH/BTC** | 0.03310 |\n| **DXY** | 99.46 |\n| **Fed Funds** | \u2013 (no new data) |\n| **Yield Curve (10Y\u20112Y)** | 0.58\u202f% (normal) |\n\n---\n\n### 1. The Valuation  \nBitcoin is **$20,205 below the 20\u2011week SMA** and **$15,153 below the 21\u2011week EMA** \u2013 a clear bearish structure. On a logarithmic chart, the price sits roughly **18\u202f% below the 20\u2011week trend line**, indicating a significant pullback from the recent 30\u2011day high of ~$130k. In absolute terms, the gap is large enough that a sustained rally would need to close the ~$20k deficit before any new bullish trend can form.\n\n### 2. The Risk Analysis  \nThe Risk Metric at **0.67** places us in the *neutral* zone but on an upward trajectory. Historically, a rise from 0.60 to 0.70 has preceded a **10\u201115\u202f% rally** over the next 3\u20136\u202fmonths, as risk appetite climbs. However, the metric is still below the *euphoria* threshold (0.70), suggesting that a **moderate\u2011risk, accumulation\u2011focused stance** is warranted rather than aggressive buying. If the metric were to exceed 0.80, we would see a shift toward a distribution phase.\n\n### 3. The Macro Picture  \nThe **DXY at 99.46** signals a strong dollar, which typically compresses risk\u2011assets like Bitcoin. Coupled with a **normal 10Y\u20112Y spread (0.58\u202f%)**, the macro environment remains **liquidity\u2011neutral** \u2013 no overt tightening from the Fed (no new rate hikes reported). In practice, this means that while risk sentiment is improving, the dollar\u2019s strength still exerts downward pressure on crypto valuations, especially in the short term.\n\n### 4. Altcoin Dynamics  \nThe **ETH/BTC ratio of 0.03310** shows Ethereum losing ground to Bitcoin, a pattern we often see **pre\u2011halving** when BTC\u2019s scarcity narrative dominates. Alts are currently **bleeding** into BTC, which could be a sign of a short\u2011term consolidation for the broader market.\n\n### 5. What to Expect Next  \n- **Bullish scenario (\u2248\u202f45\u202f%)**: Bitcoin closes the $20k gap to the 21\u2011W EMA within 4\u20136\u202fweeks, risk metric climbs to 0.75, triggering a 12\u201315\u202f% rally over the next 3\u202fmonths.  \n- **Neutral scenario (\u2248\u202f35\u202f%)**: Bitcoin trades sideways around $90k\u2013$95k, risk metric stabilizes near 0.68, and the market remains in a consolidation phase.  \n- **Bearish scenario (\u2248\u202f20\u202f%)**: Bitcoin falls below $85k, risk metric dips below 0.60, and a 10\u201312\u202f% correction occurs over the next 2\u20133\u202fweeks.\n\nThese probabilities are derived from historical volatility clustering and recent risk\u2011metric movements.\n\n### 6. Actionable Verdict  \n**Hold** your current BTC position but **limit new purchases** to a maximum of **$5k per week** until the price closes the $20k gap to the 21\u2011W EMA. Consider allocating **10\u202f% of your crypto portfolio to cash** or a low\u2011risk bond ETF to hedge against a potential short\u2011term dip. This strategy balances the upside potential (\u2248\u202f12\u202f% over 3\u202fmonths) against the downside risk (\u2248\u202f10\u202f% if the bearish scenario materializes).\n\n---\n\n**Forward\u2011looking note:**  \nIf Bitcoin can close the gap to the 21\u2011week EMA and the Risk Metric crosses 0.75, we should expect a **significant risk\u2011asset rally** that could spill into the alt\u2011coin space. Until then, a cautious accumulation strategy remains the most prudent path.",
-  "generated_at": "2025-12-04T09:29:03.994771"
+  "commentary": "**Market Update**\n\nBitcoin is currently trading below the Bull Market Support Band (20W SMA: $110,599, 21W EMA: $105,547). \n\nThe Risk Metric sits at 0.67, indicating a neutral zone. Higher risk levels warrant defensive positioning.\n\nMacro headwinds from the Federal Reserve's higher-for-longer policy continue to pressure risk assets. The DXY remains elevated, creating headwinds for crypto.\n\n**Verdict**: Cash is a position - patience is key.\n\nAnalysis by Hyper Analytical.",
+  "generated_at": "2025-12-05T09:26:14.688247"
 }
